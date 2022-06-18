@@ -2,7 +2,7 @@ import cv2
 import time
 import numpy as np
 
-cap = cv2.VideoCapture('input/video_3.mp4')
+cap = cv2.VideoCapture('input/video_1.mp4')
 
 # get the video frames' width and height for proper saving of videos
 frame_width = int(cap.get(3))
@@ -23,12 +23,18 @@ yolo_model = cv2.dnn.readNetFromDarknet('files/yolov3.cfg', 'files/yolov3.weight
 ln = yolo_model.getLayerNames()
 ln = [ln[i-1] for i in yolo_model.getUnconnectedOutLayers()]
 def preprocessing(image):
-    R,G,B = cv2.split(image)
-    eq_R = cv2.equalizeHist(R)
-    eq_G = cv2.equalizeHist(G)
-    eq_B = cv2.equalizeHist(B)
-    image= cv2.merge([eq_R, eq_G, eq_B])
-    image = cv2.GaussianBlur(image, (3,3), 0)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+    y, cr, cb = cv2.split(image)
+    y_eq = cv2.equalizeHist(y)
+
+    img_y_cr_cb_eq = cv2.merge((y_eq, cr, cb))
+    image = cv2.cvtColor(img_y_cr_cb_eq, cv2.COLOR_YCR_CB2RGB)
+    # R,G,B = cv2.split(image)
+    # eq_R = cv2.equalizeHist(R)
+    # eq_G = cv2.equalizeHist(G)
+    # eq_B = cv2.equalizeHist(B)
+    # image= cv2.merge([eq_R, eq_G, eq_B])
+    # image = cv2.GaussianBlur(image, (3,3), 0)
     return image
     
 def detect(image):
@@ -37,7 +43,7 @@ def detect(image):
     image = preprocessing(image)
     image_height, image_width, _ = image.shape
 
-    blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), crop=False)
+    blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), crop=False, interpolation=cv2.INTER_NEAREST)
     yolo_model.setInput(blob)
 
     layerOutputs = yolo_model.forward(ln)
