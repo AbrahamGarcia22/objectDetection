@@ -1,16 +1,23 @@
 import cv2
 import time
 import numpy as np
+import sys
 
-cap = cv2.VideoCapture('input/video_3.mp4')
+
+if len(sys.argv) != 3:
+    print("Error!\nUso: pyhton3 caffe.py [input_video_path] [output_video_path]")
+    exit(1)
+video_in = sys.argv[1]
+video_out = sys.argv[2]
+
+cap = cv2.VideoCapture(video_in)
 
 # get the video frames' width and height for proper saving of videos
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 
 # create the `VideoWriter()` object
-out = cv2.VideoWriter('output/video_result_2.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
-
+out = cv2.VideoWriter(video_out, cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
 with open('files/object_detection_classes_coco.txt', 'r') as f:
     class_names = f.read().split('\n')
 
@@ -48,15 +55,10 @@ def detect(image):
 
     output = ssd_model.forward()
     image_copy = np.copy(image)
-    # print(output[0,0,:])
-    # return
     # loop over each of the layer outputs
-    # print(output)
-    #print(layerInputs)
     for detection in output[0, 0, :, :]:
         confidence = detection[2]
         if confidence > .3:
-            
             # get the class id
             #print(confidence)
             class_id = detection[1]

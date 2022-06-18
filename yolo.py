@@ -1,16 +1,23 @@
 import cv2
 import time
 import numpy as np
+import sys
 
-cap = cv2.VideoCapture('input/video_1.mp4')
+
+if len(sys.argv) != 3:
+    print("Error!\nUso: pyhton3 caffe.py [input_video_path] [output_video_path]")
+    exit(1)
+video_in = sys.argv[1]
+video_out = sys.argv[2]
+
+cap = cv2.VideoCapture(video_in)
 
 # get the video frames' width and height for proper saving of videos
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 
 # create the `VideoWriter()` object
-out = cv2.VideoWriter('output/video_result_3.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
-
+out = cv2.VideoWriter(video_out, cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
 with open('files/classes_coco_cafe.txt', 'r') as f:
     class_names = f.read().split('\n')
 
@@ -38,12 +45,11 @@ def preprocessing(image):
     return image
     
 def detect(image):
-    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
     image = preprocessing(image)
     image_height, image_width, _ = image.shape
 
-    blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), crop=False, interpolation=cv2.INTER_NEAREST)
+    blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), crop=False)
     yolo_model.setInput(blob)
 
     layerOutputs = yolo_model.forward(ln)

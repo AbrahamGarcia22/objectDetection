@@ -1,15 +1,23 @@
 import cv2
 import time
 import numpy as np
+import sys
 
-cap = cv2.VideoCapture('input/video_3.mp4')
+
+if len(sys.argv) != 3:
+    print("Error!\nUso: pyhton3 caffe.py [input_video_path] [output_video_path]")
+    exit(1)
+video_in = sys.argv[1]
+video_out = sys.argv[2]
+
+cap = cv2.VideoCapture(video_in)
 
 # get the video frames' width and height for proper saving of videos
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 
 # create the `VideoWriter()` object
-out = cv2.VideoWriter('output/video_result_1.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
+out = cv2.VideoWriter(video_out, cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
 
 with open('files/classes_coco_cafe.txt', 'r') as f:
     class_names = f.read().split('\n')
@@ -46,11 +54,6 @@ def detect(image):
 
     output = caffe_model.forward()
     image_copy = np.copy(image)
-    # print(output[0,0,:])
-    # return
-    # loop over each of the layer outputs
-    # print(output)
-    #print(layerInputs)
     for detection in output[0, 0, :, :]:
         confidence = detection[2]
         if confidence > .5:
@@ -73,15 +76,6 @@ def detect(image):
         # put the FPS text on top of the frame
             cv2.putText(image_copy, text, (int(box_x), int(box_y - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     return image_copy
-# image = cv2.imread('../../Notebooks/images/pedestrian_bike.jpeg')
-# image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-# res = detect(image)
-# cv2.imshow("o",res)
-# key = cv2.waitKey(30000)#pauses for 3 seconds before fetching next image
-# if key == 27:#if ESC is pressed, exit loop
-#     cv2.destroyAllWindows()
-# def prepocess(img):
-#     img = cv2.eq
     
 #detect objects in each frame of the video
 while cap.isOpened():
